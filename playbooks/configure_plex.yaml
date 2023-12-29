@@ -5,7 +5,7 @@
     - name: Check if plex is installed
       become: true
       become_user: root
-      ansible.builtin.shell: systemctl status plex.service
+      ansible.builtin.shell: systemctl status plexmediaserver.service
       ignore_errors: true
       register: plex_installed
 
