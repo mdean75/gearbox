@@ -1,0 +1,10 @@
+- name: Install ansible
+  hosts: cicd
+  become: true
+  become_user: root
+  tasks:
+    - name: Install ansible with package manager
+      ansible.builtin.package:
+        name: ansible
+        state: present
+          

@@ -1,0 +1,45 @@
+- name: Configure Jenkins
+  hosts: jenkins
+  gather_facts: true
+  tasks:
+    - name: Check if Jenkins is installed
+      become: true
+      become_user: root
+      ansible.builtin.shell: systemctl status jenkins.service
+      register: jenkins_installed
+
+    - block:
+      - name: Check if Java is installed
+        ansible.builtin.shell: java -version
+        register: java_exists
+        ignore_errors: yes
+
+      - name: Install Java
+        when: java_exists is failed
+        ansible.builtin.apt:
+          name: openjdk-17-jre-headless
+          update_cache: yes
+
+      - name: Download Jenkins repo key
+        become: true
+        become_user: root
+        ansible.builtin.get_url:
+          url: https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+          dest: /usr/share/keyrings/jenkins-keyring.asc
+
+      - name: Add Jenkins software repo to source list and provide key
+        shell: echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
+          https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
+          /etc/apt/sources.list.d/jenkins.list > /dev/null
+
+      - name: Install Jenkins
+        ansible.builtin.apt:
+          name: jenkins
+          update_cache: yes
+
+      - name: Get Jenkins setup password
+        become: true
+        become_user: root
+        shell: cat /var/lib/jenkins/secrets/initialAdminPassword
+
+      when: jenkins_installed is failed

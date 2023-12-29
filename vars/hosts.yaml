@@ -1,0 +1,74 @@
+ungrouped:
+  hosts:
+    local:
+      ansible_connection: local
+      vars:
+        arch: aarch64
+        os: apple-darwin
+        user: mdeangelo
+    plex:
+      ansible_host: 192.168.40.230
+      ansible_port: 22
+      vars:
+        arch: x86_64
+        os: linux
+        user: mdeangelo
+        dist:
+          family: ubuntu
+          version: 22.04
+        pacman: apt
+
+helix:
+  hosts:
+    hyperv:
+      ansible_host: 192.168.40.200
+      ansible_port: 2223
+      vars:
+        # the linux artifact was built with the arch and os reversed
+        arch: linux
+        os: x86_64
+        user: mdeangelo
+        dist:
+          family: ubuntu
+          version: 20.04
+        pacman: apt
+
+cicd:
+  hosts:
+    jenkins:
+      ansible_host: 192.168.40.192
+      ansible_port: 22
+      vars:
+        arch: linux
+        os: x86_64
+        user: mdeangelo
+        dist:
+          family: ubuntu
+          version: 22.04
+        pacman: apt
+
+development:
+  hosts:
+    oel7:
+      ansible_host: 192.168.40.180
+      ansible_port: 22
+      vars:
+        arch: x86_64
+        os: linux
+        user: mdeangelo
+        dist:
+          family: oracle linux
+          version: 7
+        pacman: yum
+
+      oel8:
+        ansible_host: 192.168.40.181
+        ansible_port: 22
+        vars:
+          arch: x86_64
+          os: linux
+          user: mdeangelo
+          dist:
+            family: oracle linux
+            version: 8
+          pacman: yum

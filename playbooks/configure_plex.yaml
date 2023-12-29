@@ -1,0 +1,24 @@
+- name: Install and configure plex
+  hosts: plex
+  gather_facts: true
+  tasks:
+    - name: Check if plex is installed
+      become: true
+      become_user: root
+      ansible.builtin.shell: systemctl status plex.service
+      ignore_errors: true
+      register: plex_installed
+
+    - name: Download plex server installer
+      when: plex_installed is failed
+      block:
+        - name: Download plex server installer
+          ansible.builtin.get_url:
+            url: https://downloads.plex.tv/plex-media-server-new/1.32.8.7639-fb6452ebf/debian/plexmediaserver_1.32.8.7639-fb6452ebf_amd64.deb
+            dest: /tmp/plex-media-server.deb
+            
+        - name: Install plex media server on Ubuntu using dpkg
+          become: true
+          become_user: root
+          shell: dpkg -i /tmp/plex-media-server.deb
+          when: ansible_facts['os_family'] == "Debian" 

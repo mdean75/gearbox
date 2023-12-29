@@ -1,0 +1,60 @@
+- name: Configure Rust
+  hosts: helix
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/home/mdeangelo/.cargo/bin"
+  gather_facts: true
+  become: true
+  become_user: "{{ hostvars[inventory_hostname].vars.user }}"
+  tasks:
+    - name: Export path with cargo bin
+      ansible.builtin.shell: export PATH=/home/mdeangelo/.cargo/bin:$PATH
+
+    - name: Check if rust is installed
+      ansible.builtin.shell: command -v cargo
+      register: rust_exits
+      ignore_errors: yes
+
+    - name: Download rust installer
+      when: rust_exits is failed
+      get_url: 
+        url: https://sh.rustup.rs
+        dest: /tmp/sh.rustup.sh
+        mode: '0755'
+        force: 'yes'
+      tags: 
+        - rust
+
+    - name: Install rust
+      when: rust_exits is failed
+      ansible.builtin.shell: /tmp/sh.rustup.sh -y
+      tags:
+        - rust
+
+    # - name: Source rust env
+    #   become: true
+    #   become_user: mdeangelo
+    #   shell: . /home/{{ hostvars[inventory_hostname].vars.user }}/.cargo/env && cargo -v
+    #   tags:
+    #     - rust
+
+    # - name: Source bashrc
+    #   become: true
+    #   become_user: mdeangelo
+    #   # when: source_cargo is true
+    #   shell: . /home/{{ hostvars[inventory_hostname].vars.user }}/.bashrc && cargo -v
+    #   args:
+    #     executable: /bin/bash
+    #   tags:
+    #     - rust
+        
+    # - name: Install ripgrep
+    #   community.general.cargo:
+    #     name: ripgrep
+    # - name: Create local bin directory
+    #   file: 
+    #     path: /home/{{ hostvars[inventory_hostname].vars.user }}/.local/bin
+    #     state: directory
+
+    # - name: Add rust analyzer
+    #   shell: rustup component add rust-analyzer
+        
