@@ -8,17 +8,19 @@
       ansible.builtin.shell: systemctl status jenkins.service
       register: jenkins_installed
 
-    - block:
+    - name: Configure Jenkins
+      when: jenkins_installed is failed
+      block: 
       - name: Check if Java is installed
         ansible.builtin.shell: java -version
         register: java_exists
-        ignore_errors: yes
+        ignore_errors: true
 
       - name: Install Java
         when: java_exists is failed
         ansible.builtin.apt:
           name: openjdk-17-jre-headless
-          update_cache: yes
+          update_cache: true
 
       - name: Download Jenkins repo key
         become: true
@@ -26,20 +28,25 @@
         ansible.builtin.get_url:
           url: https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
           dest: /usr/share/keyrings/jenkins-keyring.asc
+          mode: '0755'
 
       - name: Add Jenkins software repo to source list and provide key
-        shell: echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
+        ansible.builtin.shell: echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
           https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
           /etc/apt/sources.list.d/jenkins.list > /dev/null
 
       - name: Install Jenkins
         ansible.builtin.apt:
           name: jenkins
-          update_cache: yes
+          update_cache: true
 
       - name: Get Jenkins setup password
         become: true
         become_user: root
-        shell: cat /var/lib/jenkins/secrets/initialAdminPassword
+        ansible.builtin.shell: cat /var/lib/jenkins/secrets/initialAdminPassword
 
-      when: jenkins_installed is failed
+    - name: Add sshpass
+      become: true
+      ansible.builtin.package:
+        name: sshpass
+        state: present

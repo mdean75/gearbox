@@ -1,0 +1,6 @@
+- name: Get facts
+  hosts: plex
+  tasks:
+    - name: Get system facts
+      ansible.builtin.debug:
+        var: ansible_facts
